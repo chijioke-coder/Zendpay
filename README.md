@@ -1,7 +1,6 @@
 # Zendpay (simulation)
 
-A real-world banking **simulation**. All money is virtual; nothing real is stored or moved.
-Stack: Flask + Supabase Postgres, deployed on Vercel. (Locally it falls back to SQLite.)
+A real-world banking app made for all
 
 ## Deploy: Supabase + GitHub + Vercel
 
