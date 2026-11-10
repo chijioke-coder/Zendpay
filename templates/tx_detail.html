@@ -13,7 +13,7 @@
   {% if t['note'] %}<div class="row"><span class="muted">Note</span><b>{{ t['note'] }}</b></div>{% endif %}
   <div class="row"><span class="muted">Date</span><b>{{ t['created_at']|dfull }}</b></div>
   <div class="row"><span class="muted">Reference</span><b>{{ t['ref'] }}</b></div>
-  <p class="sim-note">SIMULATION · virtual funds only. This is not a bank receipt and has no monetary value.</p>
+  
 </section>
 <a class="btn primary" href="{{ url_for('home') }}">Done</a>
 {% endblock %}
