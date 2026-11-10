@@ -1,0 +1,9 @@
+{% extends "user_base.html" %}
+{% block header %}{% set back=url_for('settings') %}{% set title='Themes' %}{% include "_back.html" %}{% endblock %}
+{% block content %}
+<section class="card menu themes">
+  <button data-set-theme="light"><i>☀</i>Light<span class="tick">✓</span></button>
+  <button data-set-theme="dark"><i>☾</i>Dark<span class="tick">✓</span></button>
+  <button data-set-theme="system"><i>◐</i>Match device<span class="tick">✓</span></button>
+</section>
+{% endblock %}

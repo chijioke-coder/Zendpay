@@ -1,0 +1,14 @@
+# secrets and local state: NEVER commit these
+.env
+.env.*
+!.env.example
+.secret_key
+owner_credentials.txt
+*.db
+*.db-journal
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+.vercel/

@@ -1,0 +1,13 @@
+{% extends "auth_base.html" %}
+{% block title %}Sign in · Zendpay{% endblock %}
+{% block content %}
+<h1>Welcome back</h1>
+<p class="sub">Sign in to your Zendpay account</p>
+<form method="post" class="stack" autocomplete="on">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <label class="field"><input type="email" name="email" placeholder="Email address" required autocomplete="username"></label>
+  <label class="field pw"><input type="password" name="password" placeholder="Password" required autocomplete="current-password"><button type="button" class="eye" data-eye aria-label="Show password">👁</button></label>
+  <button class="btn primary" type="submit">Sign in →</button>
+</form>
+<p class="center muted">New to Zendpay? <a href="{{ url_for('signup') }}">Create an account →</a></p>
+{% endblock %}

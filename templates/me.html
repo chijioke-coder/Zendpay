@@ -1,0 +1,15 @@
+{% extends "user_base.html" %}
+{% block title %}Me · Zendpay{% endblock %}
+{% block header %}<header class="hello"><div></div><a class="icon-btn" href="{{ url_for('settings') }}" aria-label="Settings">⚙</a></header>{% endblock %}
+{% block content %}
+<a class="card who" href="{{ url_for('profile') }}"><span class="avatar">{{ g.user['first_name'][0] }}</span><div><h2>{{ g.user['first_name']|upper }} ›</h2><span class="pill successful">{{ g.user['status']|capitalize }}</span></div></a>
+<section class="card">
+  <div class="row"><b>Total Balance <button class="eye-sm" data-hide>👁</button></b><b data-secret="{{ g.user['balance']|money(g.user['currency']) }}">{{ g.user['balance']|money(g.user['currency']) }}</b></div>
+</section>
+<section class="card menu">
+  <a href="{{ url_for('transactions') }}"><i>☰</i>Transactions<span>›</span></a>
+  <a href="{{ url_for('deposit') }}"><i>⬇</i>Add Money<span>›</span></a>
+  <a href="{{ url_for('profile') }}"><i>👤</i>Profile Info<span>›</span></a>
+  <a href="{{ url_for('settings') }}"><i>⚙</i>Settings<span>›</span></a>
+</section>
+{% endblock %}

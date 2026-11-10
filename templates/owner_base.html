@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block bodyclass %}owner{% endblock %}
+{% block body %}
+<header class="topbar">{% include "_logo.html" %}<span class="badge">Owner</span>
+<span class="grow"></span><button class="icon-btn" data-theme-toggle aria-label="Toggle dark mode">🌓</button></header>
+<nav class="onav">
+  <a href="{{ url_for('owner_home') }}" class="{{ 'on' if onav=='home' }}">Overview</a>
+  <a href="{{ url_for('owner_customers') }}" class="{{ 'on' if onav=='cust' }}">Customers</a>
+  <a href="{{ url_for('owner_deposits') }}" class="{{ 'on' if onav=='dep' }}">Deposits</a>
+  <a href="{{ url_for('owner_banks') }}" class="{{ 'on' if onav=='bank' }}">Bank accounts</a>
+  <a href="{{ url_for('owner_transactions') }}" class="{{ 'on' if onav=='tx' }}">Transactions</a>
+  <a href="{{ url_for('owner_activity') }}" class="{{ 'on' if onav=='act' }}">Activity</a>
+  <a href="{{ url_for('owner_settings') }}" class="{{ 'on' if onav=='set' }}">Settings</a>
+</nav>
+<main class="odash">{% include "_flash.html" %}{% block content %}{% endblock %}</main>
+{% endblock %}

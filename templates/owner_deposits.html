@@ -1,0 +1,10 @@
+{% extends "owner_base.html" %}
+{% block content %}
+<h1>Deposit requests</h1>
+<section class="card"><div class="tablewrap"><table>
+<tr><th>Customer</th><th>Amount</th><th>Requested</th><th>Status</th><th></th></tr>
+{% for d in rows %}<tr><td>{{ d['first_name'] }} {{ d['surname'] }}<br><small class="muted">{{ d['account_number'] }}</small></td><td><b>{{ d['amount']|money(d['currency']) }}</b></td><td>{{ d['created_at']|dt }}</td><td><span class="pill {{ {'pending':'pending','approved':'successful','declined':'failed'}[d['status']] }}">{{ d['status'] }}</span></td>
+<td class="r">{% if d['status']=='pending' %}{% set url=url_for('owner_deposit_decide', did=d['id']) %}{% include "_decide.html" %}{% endif %}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No requests yet.</td></tr>{% endfor %}
+</table></div></section>
+{% endblock %}

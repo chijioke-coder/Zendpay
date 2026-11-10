@@ -1,0 +1,12 @@
+{% extends "user_base.html" %}
+{% block header %}{% set back=url_for('me') %}{% set title='Settings' %}{% include "_back.html" %}{% endblock %}
+{% block content %}
+<section class="card menu">
+  <a href="{{ url_for('profile') }}"><i>👤</i>My Profile<span>›</span></a>
+  <a href="{{ url_for('change_pin') }}"><i>🔒</i>Payment Settings<span>›</span></a>
+  <a href="{{ url_for('change_password') }}"><i>🔑</i>Login Settings<span>›</span></a>
+  <a href="{{ url_for('theme') }}"><i>◐</i>Themes<span>›</span></a>
+  <a href="{{ url_for('about') }}"><i>ⓘ</i>About<span>›</span></a>
+</section>
+<form method="post" action="{{ url_for('logout') }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn ghost wide">Sign Out</button></form>
+{% endblock %}

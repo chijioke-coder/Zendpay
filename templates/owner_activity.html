@@ -1,0 +1,8 @@
+{% extends "owner_base.html" %}
+{% block content %}
+<h1>Activity log</h1>
+<section class="card"><div class="tablewrap"><table>
+<tr><th>When</th><th>Who</th><th>Action</th><th>Detail</th></tr>
+{% for a in rows %}<tr><td>{{ a['created_at']|dt }}</td><td>{{ a['actor'] }}</td><td>{{ a['action'] }}</td><td><small>{{ a['detail'] }}</small></td></tr>{% else %}<tr><td colspan="4" class="muted">No activity.</td></tr>{% endfor %}
+</table></div></section>
+{% endblock %}

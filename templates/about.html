@@ -1,0 +1,6 @@
+{% extends "user_base.html" %}
+{% block header %}{% set back=url_for('settings') %}{% set title='About' %}{% include "_back.html" %}{% endblock %}
+{% block content %}
+<section class="card"><p><b>Zendpay</b> is a real-world <b>simulation</b> of a digital wallet. All balances and transfers are virtual. No real money is stored or moved, and balances have no monetary value.</p>
+<p class="muted">Transfers to Zendpay accounts and owner-supplied bank accounts are supported. Anything else shows "Service unavailable for this financial institution".</p></section>
+{% endblock %}

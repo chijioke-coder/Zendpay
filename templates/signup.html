@@ -1,0 +1,54 @@
+{% extends "auth_base.html" %}
+{% block title %}Create account · Zendpay{% endblock %}
+{% block content %}
+<h1>Create your account</h1>
+<p class="sub" id="stepSub">Step 1 of 3 — Personal details</p>
+<div class="stepper" id="stepper">
+  <div class="st" data-s="1"><i>👤</i><span>Personal</span></div><div class="bar"></div>
+  <div class="st" data-s="2"><i>⚙</i><span>Account</span></div><div class="bar"></div>
+  <div class="st" data-s="3"><i>🛡</i><span>Security</span></div>
+</div>
+<div class="flash error" id="formErr" hidden></div>
+<form id="signupForm" class="stack" autocomplete="off" novalidate>
+  <section data-step="1">
+    <div class="two"><label class="field"><input name="surname" placeholder="Surname" autocomplete="family-name"></label>
+    <label class="field"><input name="first_name" placeholder="First name" autocomplete="given-name"></label></div>
+    <label class="field"><input name="email" type="email" placeholder="Email address" autocomplete="email"></label>
+    <button type="button" class="field picker" data-pick="country"><small>COUNTRY OF RESIDENCE</small><span id="countryLabel">&nbsp;</span></button>
+    <div class="phone"><div class="field dial" id="dialBox">—</div><label class="field"><input name="phone" inputmode="tel" placeholder="Phone number" autocomplete="tel-national"></label></div>
+    <button type="button" class="btn primary" data-next>Continue →</button>
+  </section>
+  <section data-step="2" hidden>
+    <label class="field sel"><small>ACCOUNT TYPE</small><select name="account_type">{% for t in account_types %}<option>{{ t }}</option>{% endfor %}</select></label>
+    <button type="button" class="field picker" data-pick="currency"><small>PRIMARY CURRENCY</small><span id="currencyLabel">&nbsp;</span></button>
+    <div class="card cur-card" id="curCard" hidden><span class="cur-sym" id="curSym"></span><div><b id="curCode"></b><div class="muted" id="curName"></div></div></div>
+    <p class="muted small">Your balance is held in this currency. It can't be changed later.</p>
+    <div class="two"><button type="button" class="btn ghost" data-back>← Back</button><button type="button" class="btn primary" data-next>Continue →</button></div>
+  </section>
+  <section data-step="3" hidden>
+    <label class="field pw"><input name="password" type="password" placeholder="Password" autocomplete="new-password"><button type="button" class="eye" data-eye aria-label="Show password">👁</button></label>
+    <label class="field pw"><input name="confirm" type="password" placeholder="Confirm password" autocomplete="new-password"><button type="button" class="eye" data-eye aria-label="Show password">👁</button></label>
+    <label class="field"><input name="pin" inputmode="numeric" maxlength="4" placeholder="4-digit transaction PIN" autocomplete="off"></label>
+    <div class="pinbar" id="pinbar"><i></i><i></i><i></i><i></i></div>
+    <p class="muted small">Used to authorise all transactions</p>
+    <label class="check"><input type="checkbox" name="terms"> <span>I agree to the <a href="{{ url_for('legal', page='terms') }}">Terms of Service</a> and <a href="{{ url_for('legal', page='privacy') }}">Privacy Policy</a>.</span></label>
+    <div class="two"><button type="button" class="btn ghost" data-back>← Back</button><button type="submit" class="btn primary" id="createBtn">Create Account ✓</button></div>
+  </section>
+</form>
+<p class="center muted">Already have an account? <a href="{{ url_for('login') }}">Sign in →</a></p>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-bg" data-close></div>
+  <div class="sheet-body">
+    <input class="sheet-search" id="sheetSearch" placeholder="Search…" autocomplete="off">
+    <ul id="sheetList"></ul>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+window.ZP_COUNTRIES = {{ countries|tojson }};
+window.ZP_CURRENCIES = {{ CURRENCIES|tojson }};
+</script>
+<script src="{{ url_for('static', filename='signup.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,5 @@
+<a class="tx" href="{{ url_for('tx_detail', ref=t['ref']) }}">
+  <span class="ico {{ 'in' if t['direction']=='in' else 'out' }}">{{ '↓' if t['direction']=='in' else '↑' }}</span>
+  <span class="mid"><b>{% if t['category']=='Deposit' %}Deposit{% elif t['category']=='Bank Transfer' %}{{ 'To' if t['direction']=='out' else 'From' }} {{ t['cp_bank'] or 'bank' }} · {{ t['cp_name'] }}{% else %}{{ t['category'] }} {{ t['cp_name'] }}{% endif %}</b><small>{{ t['created_at']|dt }}</small></span>
+  <span class="amt"><b class="{{ 'plus' if t['direction']=='in' else 'minus' }}">{{ '+' if t['direction']=='in' else '-' }}{{ t['amount']|money(t['currency']) }}</b><em class="pill {{ t['status']|lower }}">{{ t['status'] }}</em></span>
+</a>

@@ -1,0 +1,15 @@
+{% extends "user_base.html" %}
+{% block header %}{% set back=url_for('settings') %}{% set title='My Profile' %}{% include "_back.html" %}{% endblock %}
+{% block content %}
+<section class="card center"><span class="avatar big-av">{{ g.user['first_name'][0] }}</span><h2>{{ g.user['first_name']|upper }}</h2></section>
+<section class="card">
+  <div class="row"><span class="muted">Zendpay Account Number</span><b>{{ g.user['account_number'] }} <button class="copy" data-copy="{{ g.user['account_number'] }}">⧉</button></b></div>
+  <div class="row"><span class="muted">Account Type</span><b>{{ g.user['account_type'] }}</b></div>
+  <div class="row"><span class="muted">Currency</span><b>{{ g.user['currency'] }}</b></div>
+  <div class="row"><span class="muted">Full Name</span><b>{{ g.user['surname']|upper }} {{ g.user['first_name']|upper }}</b></div>
+  <div class="row"><span class="muted">Mobile Number</span><b>+{{ g.user['dial'] }}{{ g.user['phone'] }}</b></div>
+  <div class="row"><span class="muted">Email</span><b>{{ g.user['email'] }}</b></div>
+  <div class="row"><span class="muted">Country</span><b>{{ g.user['country'] }}</b></div>
+  <div class="row"><span class="muted">Status</span><b>{{ g.user['status']|capitalize }}</b></div>
+</section>
+{% endblock %}

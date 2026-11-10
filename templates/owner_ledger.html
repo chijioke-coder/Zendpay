@@ -1,0 +1,10 @@
+{% extends "owner_base.html" %}
+{% block content %}
+<h1>Owner ledger</h1>
+<p class="muted">Acct {{ g.user['account_number'] }} · {{ full_name(g.user) }} · funds sent out and bank-account receipts (virtual).</p>
+<section class="card"><div class="tablewrap"><table>
+<tr><th>Date</th><th>Type</th><th>Counterparty</th><th>Amount</th><th>Ref</th></tr>
+{% for t in rows %}<tr><td>{{ t['created_at']|dt }}</td><td>{{ t['category'] }}</td><td>{{ t['cp_name'] }}<br><small class="muted">{{ t['cp_bank'] or '' }} {{ t['cp_account'] }}</small></td><td class="{{ 'plus' if t['direction']=='in' else 'minus' }}">{{ '+' if t['direction']=='in' else '-' }}{{ t['amount']|money(t['currency']) }}</td><td><small>{{ t['ref'] }}</small></td></tr>
+{% else %}<tr><td colspan="5" class="muted">No entries yet.</td></tr>{% endfor %}
+</table></div></section>
+{% endblock %}

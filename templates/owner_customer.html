@@ -1,0 +1,40 @@
+{% extends "owner_base.html" %}
+{% block content %}
+<p><a href="{{ url_for('owner_customers') }}">‹ Customers</a></p>
+<h1>{{ full_name(u) }} <span class="pill st-{{ u['status'] }}">{{ u['status'] }}</span></h1>
+<div class="grid2">
+<section class="card">
+  <h3>Details</h3>
+  <div class="row"><span class="muted">Account no.</span><b>{{ u['account_number'] }}</b></div>
+  <div class="row"><span class="muted">Type / currency</span><b>{{ u['account_type'] }} · {{ u['currency'] }}</b></div>
+  <div class="row"><span class="muted">Balance</span><b>{{ u['balance']|money(u['currency']) }}</b></div>
+  <div class="row"><span class="muted">Email</span><b>{{ u['email'] }}</b></div>
+  <div class="row"><span class="muted">Phone</span><b>+{{ u['dial'] }}{{ u['phone'] }}</b></div>
+  <div class="row"><span class="muted">Country</span><b>{{ u['country'] }}</b></div>
+  <div class="row"><span class="muted">Joined</span><b>{{ u['created_at']|dfull }}</b></div>
+  <div class="row"><span class="muted">Last login</span><b>{{ u['last_login']|dfull }}</b></div>
+</section>
+<section class="card">
+  <h3>Actions</h3>
+  {% if u['status']=='pending' %}<p class="muted">Awaiting verification.</p>{% set url=url_for('owner_verify', uid=u['id']) %}{% include "_decide.html" %}
+  {% elif u['status'] in ('active','restricted') %}
+  <form method="post" action="{{ url_for('owner_customer_action', uid=u['id']) }}" class="stack"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="action" value="fund">
+    <label class="field"><small>FUND ACCOUNT ({{ u['currency'] }}, virtual)</small><input name="amount" inputmode="decimal" placeholder="0.00" required></label>
+    <label class="field"><small>NOTE</small><input name="note" maxlength="80"></label>
+    <button class="btn primary">Fund account</button></form>
+  {% endif %}
+  {% if u['status'] not in ('pending','rejected','deleted') %}
+  <form method="post" action="{{ url_for('owner_customer_action', uid=u['id']) }}" class="inline actions"><input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    {% if u['status']=='active' %}<button name="action" value="restrict" class="btn sm">Restrict</button>{% endif %}
+    {% if u['status']=='restricted' %}<button name="action" value="unrestrict" class="btn sm ok">Remove restriction</button>{% endif %}
+    {% if u['status']!='suspended' %}<button name="action" value="suspend" class="btn sm bad">Suspend</button>{% else %}<button name="action" value="unsuspend" class="btn sm ok">Unsuspend</button>{% endif %}
+    <button name="action" value="delete" class="btn sm bad" onclick="return confirm('Delete this account? The customer will no longer be able to sign in.')">Delete</button>
+  </form>{% endif %}
+</section></div>
+<section class="card"><h3>Transactions</h3><div class="tablewrap"><table>
+<tr><th>Date</th><th>Type</th><th>Counterparty</th><th>Amount</th><th>Status</th></tr>
+{% for t in txs %}<tr><td>{{ t['created_at']|dt }}</td><td>{{ t['category'] }}</td><td>{{ t['cp_name'] }}<br><small class="muted">{{ t['cp_bank'] or '' }} {{ t['cp_account'] }}</small></td><td class="{{ 'plus' if t['direction']=='in' else 'minus' }}">{{ '+' if t['direction']=='in' else '-' }}{{ t['amount']|money(t['currency']) }}{% if t['fee'] %}<br><small class="muted">fee {{ t['fee']|money(t['currency']) }}</small>{% endif %}</td><td><span class="pill {{ t['status']|lower }}">{{ t['status'] }}</span></td></tr>
+{% else %}<tr><td colspan="5" class="muted">No transactions.</td></tr>{% endfor %}
+</table></div></section>
+<section class="card"><h3>Recent activity</h3>{% for a in acts %}<div class="row"><span>{{ a['action'] }}<br><small class="muted">{{ a['detail'] }}</small></span><small>{{ a['created_at']|dt }}</small></div>{% else %}<p class="muted">No activity logged.</p>{% endfor %}</section>
+{% endblock %}

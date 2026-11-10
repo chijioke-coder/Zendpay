@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="app">
+{% block header %}{% endblock %}
+<main class="page">
+{% include "_flash.html" %}
+{% if g.user['status'] == 'restricted' %}<div class="flash warn"><b>Account restricted.</b> You can view your balance and history and receive money, but you can't send money or request deposits. Contact support for help.</div>{% endif %}
+{% block content %}{% endblock %}
+</main>
+<nav class="tabs">
+  <a href="{{ url_for('home') }}" class="{{ 'on' if nav=='home' }}"><i>⌂</i>Home</a>
+  <a href="{{ url_for('transactions') }}" class="{{ 'on' if nav=='tx' }}"><i>☰</i>Transactions</a>
+  <a href="{{ url_for('me') }}" class="{{ 'on' if nav=='me' }}"><i>☺</i>Me</a>
+</nav>
+</div>
+{% endblock %}

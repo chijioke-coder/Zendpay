@@ -1,0 +1,9 @@
+{% extends "user_base.html" %}
+{% block header %}{% set back=url_for('settings') %}{% set title='Payment Settings' %}{% include "_back.html" %}{% endblock %}
+{% block content %}
+<form method="post" class="card stack"><input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <p class="muted">Change your 4-digit transaction PIN.</p>
+  <label class="field pw"><input type="password" name="current" placeholder="Account password" required><button type="button" class="eye" data-eye>👁</button></label>
+  <label class="field"><input name="new" type="password" inputmode="numeric" maxlength="4" placeholder="New 4-digit PIN" required></label>
+  <button class="btn primary">Update PIN</button></form>
+{% endblock %}

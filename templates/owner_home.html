@@ -1,0 +1,17 @@
+{% extends "owner_base.html" %}
+{% block title %}Owner · Zendpay{% endblock %}
+{% block content %}
+<h1>Overview</h1>
+<p class="muted">Owner account: <b>{{ full_name(g.user) }}</b> · Acct {{ g.user['account_number'] }}</p>
+<div class="stats">
+  <div class="card stat"><small>Customers</small><b>{{ stats.customers }}</b></div>
+  <div class="card stat"><small>Awaiting verification</small><b>{{ stats.verify }}</b></div>
+  <div class="card stat"><small>Deposit requests</small><b>{{ stats.deposits }}</b></div>
+  <div class="card stat"><small>Bank accounts</small><b>{{ stats.banks }}</b></div>
+</div>
+<section class="card"><h3>Fees collected (virtual)</h3>{% for f in fees %}<div class="row"><span>{{ f['currency'] }}</span><b>{{ f['f']|money(f['currency']) }}</b></div>{% else %}<p class="muted">None yet.</p>{% endfor %}</section>
+<section class="card"><h3>Accounts awaiting verification</h3>
+<div class="tablewrap"><table>{% for u in pend_users %}<tr><td><a href="{{ url_for('owner_customer', uid=u['id']) }}">{{ full_name(u) }}</a><br><small class="muted">{{ u['email'] }} · {{ u['country'] }} · {{ u['account_type'] }} {{ u['currency'] }}</small></td><td class="r">{% set url=url_for('owner_verify', uid=u['id']) %}{% include "_decide.html" %}</td></tr>{% else %}<tr><td class="muted">Nothing waiting.</td></tr>{% endfor %}</table></div></section>
+<section class="card"><h3>Deposit requests</h3>
+<div class="tablewrap"><table>{% for d in pend_dep %}<tr><td>{{ d['first_name'] }} {{ d['surname'] }}<br><small class="muted">Acct {{ d['account_number'] }} · {{ d['created_at']|dt }}</small></td><td><b>{{ d['amount']|money(d['currency']) }}</b></td><td class="r">{% set url=url_for('owner_deposit_decide', did=d['id']) %}{% include "_decide.html" %}</td></tr>{% else %}<tr><td class="muted">No pending requests.</td></tr>{% endfor %}</table></div></section>
+{% endblock %}

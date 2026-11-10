@@ -1,0 +1,14 @@
+{% extends "user_base.html" %}
+{% block title %}Transactions · Zendpay{% endblock %}
+{% block header %}{% set back=url_for('home') %}{% set title='Transactions' %}{% set dl=url_for('tx_download', month=month, category=cat, status=st) %}{% include "_back.html" %}{% endblock %}
+{% block content %}
+<form method="get" class="filters" id="filterForm">
+  <select name="category" onchange="this.form.submit()"><option value="">All Categories</option>{% for c in categories %}<option {{ 'selected' if c==cat }}>{{ c }}</option>{% endfor %}</select>
+  <select name="status" onchange="this.form.submit()"><option value="">All Status</option>{% for s in statuses %}<option {{ 'selected' if s==st }}>{{ s }}</option>{% endfor %}</select>
+  <input type="month" name="month" value="{{ month }}" onchange="this.form.submit()">
+</form>
+<section class="card">
+  <div class="sum"><span>In: <b class="plus">{{ tin|money(g.user['currency']) }}</b></span><span>Out: <b>{{ tout|money(g.user['currency']) }}</b></span></div>
+  {% for t in rows %}{% include "_tx_row.html" %}{% else %}<p class="muted center pad">No transactions for this filter.</p>{% endfor %}
+</section>
+{% endblock %}

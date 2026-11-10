@@ -1,0 +1,21 @@
+{% extends "user_base.html" %}
+{% block title %}Home · Zendpay{% endblock %}
+{% block header %}
+<header class="hello"><div><small>Welcome back</small><h2>Hi, {{ g.user['first_name']|upper }}</h2></div><button class="icon-btn" data-theme-toggle aria-label="Toggle dark mode">🌓</button></header>
+{% endblock %}
+{% block content %}
+<section class="balance">
+  <div class="bal-top"><span>Available <button class="eye-sm" data-hide aria-label="Hide balance">👁</button></span><a class="pill-btn" href="{{ url_for('deposit') }}">＋ Add Money</a></div>
+  <div class="bal-amt" data-secret="{{ g.user['balance']|money(g.user['currency']) }}">{{ g.user['balance']|money(g.user['currency']) }}</div>
+  <div class="bal-sub">Acct {{ g.user['account_number'] }} · {{ g.user['account_type'] }} · {{ g.user['currency'] }}</div>
+</section>
+<section class="card quick">
+  <a href="{{ url_for('transfer') }}"><i>👤</i>To Zendpay</a>
+  <a href="{{ url_for('transfer_bank') }}"><i>🏦</i>To Bank</a>
+  <a href="{{ url_for('deposit') }}"><i>⬇</i>Deposit</a>
+</section>
+<section class="card">
+  <div class="card-head"><h3>Recent transactions</h3><a href="{{ url_for('transactions') }}">See all ›</a></div>
+  {% for t in txs %}{% include "_tx_row.html" %}{% else %}<p class="muted center pad">No transactions yet. Tap <b>Add Money</b> to request a virtual deposit.</p>{% endfor %}
+</section>
+{% endblock %}

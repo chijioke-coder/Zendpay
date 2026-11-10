@@ -1,0 +1,10 @@
+{% extends "owner_base.html" %}
+{% block content %}
+<h1>Customers</h1>
+<form method="get" class="filters"><input name="q" value="{{ q }}" placeholder="Search name, email or account no."><select name="status" onchange="this.form.submit()"><option value="">Not deleted</option>{% for s in ['pending','active','restricted','suspended','rejected','deleted'] %}<option {{ 'selected' if s==st }}>{{ s }}</option>{% endfor %}</select><button class="btn sm">Search</button></form>
+<section class="card"><div class="tablewrap"><table>
+<tr><th>Customer</th><th>Account</th><th>Balance</th><th>Status</th></tr>
+{% for u in rows %}<tr><td><a href="{{ url_for('owner_customer', uid=u['id']) }}">{{ full_name(u) }}</a><br><small class="muted">{{ u['email'] }}</small></td><td>{{ u['account_number'] }}<br><small class="muted">{{ u['account_type'] }}</small></td><td>{{ u['balance']|money(u['currency']) }}</td><td><span class="pill st-{{ u['status'] }}">{{ u['status'] }}</span></td></tr>
+{% else %}<tr><td colspan="4" class="muted">No customers found.</td></tr>{% endfor %}
+</table></div></section>
+{% endblock %}

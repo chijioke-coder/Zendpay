@@ -1,0 +1,23 @@
+{% extends "auth_base.html" %}
+{% block title %}Account under verification · Zendpay{% endblock %}
+{% block content %}
+<div class="status-card">
+  <div class="pulse">⏳</div>
+  <h1>Account under verification</h1>
+  <p class="sub">Thanks, {{ g.user['first_name'] }}. Your Zendpay account has been submitted and is waiting for approval from the account owner.</p>
+  <ol class="steps">
+    <li class="done">Application submitted</li>
+    <li class="now">Under verification</li>
+    <li>Account activated</li>
+  </ol>
+  <div class="card slim">
+    <div class="row"><span class="muted">Name</span><b>{{ full_name(g.user) }}</b></div>
+    <div class="row"><span class="muted">Email</span><b>{{ g.user['email'] }}</b></div>
+    <div class="row"><span class="muted">Account type</span><b>{{ g.user['account_type'] }} · {{ g.user['currency'] }}</b></div>
+    <div class="row"><span class="muted">Submitted</span><b>{{ g.user['created_at']|dfull }}</b></div>
+  </div>
+  <p class="muted center small">You'll get access as soon as you're approved. Sign in again later to check your status.</p>
+  <a class="btn ghost" href="{{ url_for('status') }}">Refresh status</a>
+  <form method="post" action="{{ url_for('logout') }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn link">Sign out</button></form>
+</div>
+{% endblock %}
