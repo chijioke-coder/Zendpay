@@ -1,7 +1,6 @@
 {% extends "auth_base.html" %}
 {% block content %}
 <h1>{{ 'Terms of Service' if page=='terms' else 'Privacy Policy' }}</h1>
-<div class="card"><p>Zendpay is a <b>simulation</b>. All balances, deposits and transfers are virtual and have no monetary value. No real money is held, moved or processed. Do not enter real banking credentials or passwords you use elsewhere.</p>
-{% if page=='privacy' %}<p>Your details are stored only in this simulation database and are visible to the site owner for administration.</p>{% else %}<p>The owner may approve, restrict, suspend or delete any account at any time.</p>{% endif %}</div>
+
 <a class="btn ghost" href="javascript:history.back()">← Back</a>
 {% endblock %}
