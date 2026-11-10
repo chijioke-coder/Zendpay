@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="{% block bodyclass %}{% endblock %}">
-<div class="simbar">Simulation · virtual funds only · no real money</div>
+
 {% block body %}{% endblock %}
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 {% block scripts %}{% endblock %}
