@@ -1,4 +1,4 @@
-"""Zendpay - a SIMULATION banking app. All money is virtual. No real funds are ever moved."""
+
 import csv
 import io
 import math
