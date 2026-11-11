@@ -613,7 +613,7 @@ def deposit():
                    (u["id"], t.lastrowid, amt, u["currency"], now()))
         log("Deposit request", f"{money(amt, u['currency'])} by {u['email']}")
         db.execute("COMMIT")
-        flash("Deposit request sent. The owner will review and fund your account.", "ok")
+        flash("Deposit request sent." , "ok")
         return redirect(url_for("tx_detail", ref=ref))
     pend = db.execute("SELECT * FROM deposit_requests WHERE user_id=? AND status='pending' ORDER BY id DESC",
                       (u["id"],)).fetchall()
