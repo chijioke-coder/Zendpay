@@ -92,3 +92,17 @@ button.picker{cursor:pointer}button.picker span{display:block;min-height:24px}
 .inline{display:inline-flex;gap:6px;flex-wrap:wrap}.actions{margin-top:12px}
 @media(min-width:700px){.auth{padding-top:40px}}
 [hidden]{display:none!important}
+
+/* PIN bottom sheet */
+.pin-sheet .sheet-body{animation:pinUp .22s ease-out;padding:10px 20px calc(18px + env(safe-area-inset-bottom));max-height:none;overflow:visible}
+@keyframes pinUp{from{transform:translateY(100%)}to{transform:none}}
+.pin-body .grab{width:42px;height:4px;border-radius:4px;background:var(--line);margin:4px auto 14px}
+.pin-body h3{text-align:center;font-size:18px;margin:0 0 4px}
+.pin-dots{display:flex;justify-content:center;gap:16px;margin:18px 0 10px}
+.pin-dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--muted)}
+.pin-dots i.on{background:var(--primary);border-color:var(--primary)}
+.pin-dots.shake{animation:shake .3s}@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.pin-err{color:var(--bad);text-align:center;font-size:14px;margin:0 0 6px}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.keypad button{border:0;background:var(--primary-soft);color:var(--text);font:inherit;font-size:24px;font-weight:700;padding:16px 0;border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.keypad button:active{background:var(--line)}.keypad button.alt{background:transparent;font-size:15px;color:var(--muted)}
