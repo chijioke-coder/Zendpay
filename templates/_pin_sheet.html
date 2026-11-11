@@ -1,0 +1,16 @@
+<div class="sheet pin-sheet" id="pinSheet" hidden role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+  <div class="sheet-bg" data-pin-close></div>
+  <div class="sheet-body pin-body">
+    <div class="grab"></div>
+    <h3 id="pinTitle">Enter transaction PIN</h3>
+    <p class="muted center small" id="pinSummary"></p>
+    <div class="pin-dots" id="pinDots" aria-live="polite"><i></i><i></i><i></i><i></i></div>
+    <p class="pin-err" id="pinErr" hidden></p>
+    <div class="keypad" id="keypad">
+      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+      <button type="button" data-pin-close class="alt">Cancel</button><button type="button" data-k="0">0</button><button type="button" data-k="del" class="alt" aria-label="Delete">⌫</button>
+    </div>
+  </div>
+</div>
