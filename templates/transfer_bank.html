@@ -10,7 +10,7 @@
   <div class="quote" id="quote" hidden></div>
   <label class="field"><small>NOTE (OPTIONAL)</small><input name="note" maxlength="80"></label>
   <input type="hidden" name="pin" id="pinValue">
-  <p class="muted small">Fee: {{ '%.1f'|format(fee['pct']*100) }}% (min ${{ '%.2f'|format(fee['min_usd']) }}, max ${{ '%.0f'|format(fee['max_usd']) }} equivalent). Only bank accounts supplied by the owner are supported.</p>
+  <p class="muted small">Fee: {{ '%.1f'|format(fee['pct']*100) }}% (min ${{ '%.2f'|format(fee['min_usd']) }}, max ${{ '%.0f'|format(fee['max_usd']) }} equivalent) bank unavailable at the moment</p>
   <button class="btn primary" id="sendBtn" type="button" {{ 'disabled' if g.user['status']!='active' }}>Send</button>
 </form>
 {% include "_pin_sheet.html" %}
