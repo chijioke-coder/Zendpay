@@ -9,19 +9,22 @@ import secrets
 import sqlite3
 import time
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, ROUND_CEILING
 from functools import wraps
 
+from urllib.parse import unquote
+
+from markupsafe import Markup
 from flask import (Flask, Response, abort, flash, g, jsonify, redirect,
                    render_template, request, session, url_for)
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from data import (ACCOUNT_TYPES, CATEGORIES, COUNTRIES, CURRENCIES, FEES,
-                  STATUSES)
+from data import (ACCOUNT_TYPES, CATEGORIES, COUNTRIES, COUNTRY_TZ, CURRENCIES,
+                  FEES, STATUSES)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.environ.get("ZENDPAY_DB", os.path.join(BASE, "zendpay.db"))
-TZ_OFFSET_HOURS = float(os.environ.get("ZENDPAY_TZ_OFFSET", "1"))  # Lagos = UTC+1
 UNAVAILABLE_MSG = "Service unavailable for this financial institution"
 REJECTED_MSG = "Sorry, you currently cannot have an account with us. Thanks for trying Zendpay."
 SUSPENDED_MSG = "Your account has been suspended. Please contact Zendpay support."
@@ -194,27 +197,29 @@ def new_ref():
 
 
 def seed_owner(db):
-    """Create the single owner account if missing. Production reads OWNER_EMAIL / OWNER_PASSWORD."""
+    """Create the single owner account from the OWNER_EMAIL / OWNER_PASSWORD environment variables
+    (set them in Vercel). Runs only while no owner exists. Locally, with no variables set, a random
+    password is generated and written to owner_credentials.txt."""
     if db.execute("SELECT 1 FROM users WHERE role='owner'").fetchone():
         return
-    email = os.environ.get("OWNER_EMAIL") or os.environ.get("ZENDPAY_OWNER_EMAIL") or "owner@zendpay.local"
+    email = (os.environ.get("OWNER_EMAIL") or os.environ.get("ZENDPAY_OWNER_EMAIL") or "owner@zendpay.local").strip().lower()
     pw = os.environ.get("OWNER_PASSWORD") or os.environ.get("ZENDPAY_OWNER_PASSWORD")
+    local_generated = False
     if not pw:
         if IS_PG or ON_VERCEL:
-            print("[zendpay] No owner exists and OWNER_PASSWORD is not set. Set OWNER_EMAIL and OWNER_PASSWORD.")
+            print("[zendpay] No owner exists. Set OWNER_EMAIL and OWNER_PASSWORD in the environment variables.")
             return
-        pw = secrets.token_urlsafe(10)
+        pw, local_generated = secrets.token_urlsafe(10), True
     first = random.choice(["Adrian", "Selene", "Marcus", "Ingrid", "Tobias", "Amara", "Dario", "Lucia"])
     last = random.choice(["Holloway", "Okonkwo", "Verhoeven", "Castellan", "Brandt", "Mbeki", "Larsen", "Ferrer"])
     acct = new_account_number(db)
     db.execute("""INSERT INTO users(role,surname,first_name,email,currency,account_number,password_hash,
                   status,created_at) VALUES('owner',?,?,?,?,?,?, 'active',?)""",
-               (last, first, email.strip().lower(), "USD", acct, generate_password_hash(pw), now()))
-    if not (IS_PG or ON_VERCEL or os.environ.get("ZENDPAY_OWNER_PASSWORD")):
+               (last, first, email, "USD", acct, generate_password_hash(pw), now()))
+    if local_generated:
         path = os.path.join(BASE, "owner_credentials.txt")
         with open(path, "w") as f:
-            f.write(f"Owner login\nEmail: {email}\nPassword: {pw}\nAccount: {acct}  Name: {first} {last}\n"
-                    "Change the password from Owner > Settings after first login.\n")
+            f.write(f"Owner login\nEmail: {email}\nPassword: {pw}\nAccount: {acct}  Name: {first} {last}\n")
         os.chmod(path, 0o600)
         print("[zendpay] Owner created. Credentials saved to owner_credentials.txt")
     else:
@@ -267,8 +272,43 @@ def money(minor, cur):
     return f"{sym}{minor / 100:,.2f}"
 
 
+UTC = timezone.utc
+TS_FMT = "%Y-%m-%dT%H:%M:%S"
+
+
+def valid_tz(name):
+    if not name or len(name) > 64 or not re.fullmatch(r"[A-Za-z0-9_+\-/]+", name):
+        return None
+    try:
+        return ZoneInfo(name)
+    except Exception:
+        return None
+
+
+def pick_tz():
+    """Time zone to show times in: where the person is accessing from (browser cookie `zp_tz`),
+    else the time zone of the country chosen at signup, else UTC."""
+    name = unquote(request.cookies.get("zp_tz", ""))
+    tz = valid_tz(name)
+    if tz:
+        return name, tz
+    if g.get("user"):
+        name = COUNTRY_TZ.get(g.user["country"] or "", "")
+        tz = valid_tz(name)
+        if tz:
+            return name, tz
+    return "UTC", UTC
+
+
+def current_tz():
+    try:
+        return g.tz
+    except (AttributeError, RuntimeError):
+        return UTC
+
+
 def local_dt(s):
-    return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S") + timedelta(hours=TZ_OFFSET_HOURS)
+    return datetime.strptime(s, TS_FMT).replace(tzinfo=UTC).astimezone(current_tz())
 
 
 def ordinal(n):
@@ -280,17 +320,25 @@ def _money(minor, cur):
     return money(minor, cur)
 
 
-@app.template_filter("dt")
-def _dt(s):
+def plain_dt(s):
     if not s:
         return "—"
     d = local_dt(s)
     return f"{d.strftime('%b')} {ordinal(d.day)}, {d.strftime('%H:%M:%S')}"
 
 
+def plain_dfull(s):
+    return local_dt(s).strftime("%d %b %Y, %H:%M:%S") if s else "—"
+
+
+@app.template_filter("dt")
+def _dt(s):
+    return Markup(f'<time class="lt">{plain_dt(s)}</time>')
+
+
 @app.template_filter("dfull")
 def _dfull(s):
-    return local_dt(s).strftime("%d %b %Y, %H:%M:%S") if s else "—"
+    return Markup(f'<time class="lt">{plain_dfull(s)}</time>')
 
 
 if IS_PG:
@@ -354,6 +402,7 @@ def guard():
             return redirect(url_for("login"))
         if not g.user:
             session.clear()
+    g.tz_name, g.tz = pick_tz()
     ep = request.endpoint or ""
     if g.user and g.user["role"] != "owner" and g.user["status"] == "pending" and \
             ep not in ("status", "logout", "static", "set_theme"):
@@ -703,9 +752,10 @@ def tx_filters(uid, args):
     if not re.fullmatch(r"\d{4}-\d{2}", month):
         month = local_dt(now()).strftime("%Y-%m")
     y, m = map(int, month.split("-"))
-    start = datetime(y, m, 1) - timedelta(hours=TZ_OFFSET_HOURS)
-    end = (datetime(y + (m == 12), 1 if m == 12 else m + 1, 1)) - timedelta(hours=TZ_OFFSET_HOURS)
-    q, p = "user_id=? AND created_at>=? AND created_at<?", [uid, start.strftime("%Y-%m-%dT%H:%M:%S"), end.strftime("%Y-%m-%dT%H:%M:%S")]
+    tz = current_tz()  # month boundaries are the viewer's local midnight
+    start = datetime(y, m, 1, tzinfo=tz).astimezone(UTC)
+    end = datetime(y + (m == 12), 1 if m == 12 else m + 1, 1, tzinfo=tz).astimezone(UTC)
+    q, p = "user_id=? AND created_at>=? AND created_at<?", [uid, start.strftime(TS_FMT), end.strftime(TS_FMT)]
     cat, st = args.get("category", ""), args.get("status", "")
     if cat in CATEGORIES:
         q += " AND category=?"; p.append(cat)
@@ -732,10 +782,10 @@ def tx_download():
     out = io.StringIO()
     w = csv.writer(out)
     w.writerow(["ZENDPAY SIMULATION - virtual funds only. Not a bank statement."])
-    w.writerow(["Account", g.user["account_number"], full_name(g.user), g.user["currency"], month])
+    w.writerow(["Account", g.user["account_number"], full_name(g.user), g.user["currency"], month, f"Times in {g.tz_name}"])
     w.writerow(["Date", "Reference", "Category", "Counterparty", "Account", "Direction", "Amount", "Fee", "Currency", "Status"])
     for r in rows:
-        w.writerow([_dfull(r["created_at"]), r["ref"], r["category"], r["cp_name"], r["cp_account"],
+        w.writerow([plain_dfull(r["created_at"]), r["ref"], r["category"], r["cp_name"], r["cp_account"],
                     r["direction"], f"{r['amount'] / 100:.2f}", f"{r['fee'] / 100:.2f}", r["currency"], r["status"]])
     return Response(out.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition": f"attachment; filename=zendpay-{month}.csv"})
