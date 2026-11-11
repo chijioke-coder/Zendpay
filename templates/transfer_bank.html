@@ -3,14 +3,13 @@
 {% block content %}
 <form method="post" class="card stack" id="tfForm" data-kind="bank">
   <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-  <label class="field"><small>BANK NAME</small><input name="bank" list="banklist" placeholder="Type or choose a bank" required autocomplete="off"></label>
-  <datalist id="banklist">{% for b in banks %}<option value="{{ b['bank_name'] }}">{% endfor %}</datalist>
+  <label class="field sel"><small>BANK NAME</small><select name="bank" required><option value="" disabled selected>Choose a bank</option>{% for b in banks %}<option>{{ b['name'] }}</option>{% endfor %}</select></label>
   <label class="field"><small>ACCOUNT NUMBER</small><input name="account" inputmode="numeric" maxlength="20" required></label>
   <label class="field"><small>AMOUNT ({{ g.user['currency'] }})</small><input name="amount" id="amt" inputmode="decimal" placeholder="0.00" required></label>
   <div class="quote" id="quote" hidden></div>
   <label class="field"><small>NOTE (OPTIONAL)</small><input name="note" maxlength="80"></label>
   <input type="hidden" name="pin" id="pinValue">
-  <p class="muted small">Fee: {{ '%.1f'|format(fee['pct']*100) }}% (min ${{ '%.2f'|format(fee['min_usd']) }}, max ${{ '%.0f'|format(fee['max_usd']) }} equivalent) bank unavailable at the moment</p>
+  <p class="muted small">Fee: {{ '%.1f'|format(fee['pct']*100) }}% (min ${{ '%.2f'|format(fee['min_usd']) }}, max ${{ '%.0f'|format(fee['max_usd']) }} equivalent) supported.</p>
   <button class="btn primary" id="sendBtn" type="button" {{ 'disabled' if g.user['status']!='active' }}>Send</button>
 </form>
 {% include "_pin_sheet.html" %}
