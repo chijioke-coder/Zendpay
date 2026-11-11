@@ -57,7 +57,7 @@
           if(!j.found){bmsgShow('Service unavailable for this financial institution');return}
           bmsgShow('');bankVal.value=j.bank;to=j.currency;form.dataset.who=j.name+' ('+j.bank+')';
           document.getElementById('bdName').textContent=j.name;document.getElementById('bdBank').textContent=j.bank;
-          document.getElementById('bdNum').textContent=j.number;document.getElementById('bdCur').textContent=j.currency;
+          document.getElementById('bdNum').textContent=j.number;
           bdet.hidden=false;doQuote()}).catch(function(){bmsgShow('Could not look up the account. Try again.')})}
       bfield.addEventListener('click',function(){if(matches.length)openBankSheet()});
       bsheet.addEventListener('click',function(e){if(e.target.closest('[data-bank-close]'))closeBankSheet()});
