@@ -8,8 +8,9 @@
   <label class="field"><small>AMOUNT ({{ g.user['currency'] }})</small><input name="amount" id="amt" inputmode="decimal" placeholder="0.00" required></label>
   <div class="quote" id="quote" hidden></div>
   <label class="field"><small>NOTE (OPTIONAL)</small><input name="note" maxlength="80"></label>
-  <label class="field"><small>TRANSACTION PIN</small><input name="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" required></label>
+  <input type="hidden" name="pin" id="pinValue">
   <p class="muted small">Fee: {{ '%.1f'|format(fee['pct']*100) }}% (min ${{ '%.2f'|format(fee['min_usd']) }}, max ${{ '%.0f'|format(fee['max_usd']) }} equivalent). Balance: {{ g.user['balance']|money(g.user['currency']) }}</p>
-  <button class="btn primary" {{ 'disabled' if g.user['status']!='active' }}>Send</button>
+  <button class="btn primary" id="sendBtn" type="button" {{ 'disabled' if g.user['status']!='active' }}>Send</button>
 </form>
+{% include "_pin_sheet.html" %}
 {% endblock %}
