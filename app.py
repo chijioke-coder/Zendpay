@@ -1,4 +1,4 @@
-
+"""Zendpay - a SIMULATION banking app. All money is virtual. No real funds are ever moved."""
 import csv
 import io
 import math
@@ -90,6 +90,11 @@ CREATE TABLE IF NOT EXISTS deposit_requests(
   status TEXT NOT NULL DEFAULT 'pending',            -- pending|approved|declined
   created_at TEXT NOT NULL, decided_at TEXT
 );
+CREATE TABLE IF NOT EXISTS banks(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS banks_name_lower ON banks(lower(name));
 CREATE TABLE IF NOT EXISTS bank_accounts(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   bank_name TEXT NOT NULL, account_number TEXT NOT NULL, account_name TEXT NOT NULL,
@@ -232,6 +237,9 @@ def init_db():
             c.executescript(SCHEMA)
     db = DB()
     try:
+        if not IS_PG:  # local only; on Supabase the migration does this
+            db.execute("INSERT INTO banks(name,active,created_at) SELECT DISTINCT bank_name,1,? FROM bank_accounts "
+                       "WHERE lower(bank_name) NOT IN (SELECT lower(name) FROM banks)", (now(),))
         seed_owner(db)
     finally:
         db.close()
@@ -605,7 +613,7 @@ def deposit():
                    (u["id"], t.lastrowid, amt, u["currency"], now()))
         log("Deposit request", f"{money(amt, u['currency'])} by {u['email']}")
         db.execute("COMMIT")
-        flash("Deposit request sent.", "ok")
+        flash("Deposit request sent. The owner will review and fund your account.", "ok")
         return redirect(url_for("tx_detail", ref=ref))
     pend = db.execute("SELECT * FROM deposit_requests WHERE user_id=? AND status='pending' ORDER BY id DESC",
                       (u["id"],)).fetchall()
@@ -703,7 +711,7 @@ def transfer():
 @login_required
 def transfer_bank():
     u, db = g.user, get_db()
-    banks = db.execute("SELECT DISTINCT bank_name FROM bank_accounts WHERE active=1 ORDER BY bank_name").fetchall()
+    banks = db.execute("SELECT name FROM banks WHERE active=1 ORDER BY name").fetchall()
     if request.method == "POST":
         if not can_send(u):
             flash("Your account is restricted. You cannot send money.", "error")
@@ -712,7 +720,8 @@ def transfer_bank():
         acct = re.sub(r"\D", "", request.form.get("account", ""))
         amt = parse_amount(request.form.get("amount"))
         note = request.form.get("note", "").strip()[:80]
-        ba = db.execute("SELECT * FROM bank_accounts WHERE active=1 AND lower(bank_name)=lower(?) AND account_number=?",
+        ba = db.execute("SELECT a.* FROM bank_accounts a JOIN banks b ON lower(b.name)=lower(a.bank_name) "
+                        "WHERE a.active=1 AND b.active=1 AND lower(a.bank_name)=lower(?) AND a.account_number=?",
                         (bank, acct)).fetchone()
         if not ba:
             flash(UNAVAILABLE_MSG, "error")
@@ -1025,31 +1034,59 @@ def owner_banks():
     db = get_db()
     if request.method == "POST":
         act = request.form.get("action")
-        if act == "add":
-            bank = request.form.get("bank_name", "").strip()[:60]
+        if act == "add_bank":
+            name = " ".join(request.form.get("name", "").split())[:60]
+            if not name:
+                flash("Enter a bank name.", "error")
+            else:
+                try:
+                    db.execute("INSERT INTO banks(name,created_at) VALUES(?,?)", (name, now()))
+                    log("Bank added", name)
+                    flash(f"{name} added to the bank list.", "ok")
+                except INTEGRITY_ERRORS:
+                    flash("That bank is already in the list.", "error")
+        elif act in ("toggle_bank", "remove_bank"):
+            bk = db.execute("SELECT * FROM banks WHERE id=?", (int(request.form.get("id", 0) or 0),)).fetchone()
+            if bk and act == "toggle_bank":
+                db.execute("UPDATE banks SET active=1-active WHERE id=?", (bk["id"],))
+                log("Bank toggled", bk["name"])
+            elif bk:
+                n = db.execute("SELECT COUNT(*) c FROM bank_accounts WHERE lower(bank_name)=lower(?)", (bk["name"],)).fetchone()["c"]
+                if n:
+                    flash(f"{bk['name']} still has {n} account(s). Remove those first, or just disable the bank.", "error")
+                else:
+                    db.execute("DELETE FROM banks WHERE id=?", (bk["id"],))
+                    log("Bank removed", bk["name"])
+                    flash("Bank removed.", "ok")
+        elif act == "add":
+            bk = db.execute("SELECT * FROM banks WHERE id=?", (int(request.form.get("bank_id", 0) or 0),)).fetchone()
             name = request.form.get("account_name", "").strip()[:80]
             acct = re.sub(r"\D", "", request.form.get("account_number", ""))
             cur = request.form.get("currency", "")
-            if not bank or not name or not 6 <= len(acct) <= 20 or cur not in CURRENCIES:
-                flash("Fill in bank name, account name, a 6-20 digit account number and a currency.", "error")
+            if not bk:
+                flash("Choose a bank. Add it to the bank list first if it isn't there.", "error")
+            elif not name or not 6 <= len(acct) <= 20 or cur not in CURRENCIES:
+                flash("Fill in account name, a 6-20 digit account number and a currency.", "error")
             else:
                 try:
                     db.execute("INSERT INTO bank_accounts(bank_name,account_number,account_name,currency,created_at) VALUES(?,?,?,?,?)",
-                               (bank, acct, name, cur, now()))
-                    log("Bank account added", f"{bank} {acct}")
+                               (bk["name"], acct, name, cur, now()))
+                    log("Bank account added", f"{bk['name']} {acct}")
                     flash("Bank account added.", "ok")
                 except INTEGRITY_ERRORS:
                     flash("That bank account already exists.", "error")
         elif act in ("toggle", "remove"):
-            bid = int(request.form.get("id", 0))
+            bid = int(request.form.get("id", 0) or 0)
             if act == "toggle":
                 db.execute("UPDATE bank_accounts SET active=1-active WHERE id=?", (bid,))
             else:
                 db.execute("DELETE FROM bank_accounts WHERE id=?", (bid,))
             log(f"Bank account {act}", str(bid))
         return redirect(url_for("owner_banks"))
+    banks = db.execute("SELECT b.*, (SELECT COUNT(*) FROM bank_accounts a WHERE lower(a.bank_name)=lower(b.name)) AS n "
+                       "FROM banks b ORDER BY b.name").fetchall()
     rows = db.execute("SELECT * FROM bank_accounts ORDER BY id DESC").fetchall()
-    return render_template("owner_banks.html", rows=rows, onav="bank")
+    return render_template("owner_banks.html", rows=rows, banks=banks, onav="bank")
 
 
 @app.route("/owner/transactions")
