@@ -35,6 +35,14 @@
         look.hidden=false;if(j.found){to=j.currency;look.className='lookup';look.textContent='✓ '+j.name+' ('+j.currency+')';doQuote()}
         else{look.className='lookup bad';look.textContent='Account not found on Zendpay'}})});
   }
+  // time zone: show times where the person is accessing from. Tell the server via a cookie.
+  try{
+    var tz=Intl.DateTimeFormat().resolvedOptions().timeZone,used=document.body.dataset.tz||'';
+    if(tz&&tz!==used){
+      document.cookie='zp_tz='+encodeURIComponent(tz)+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');
+      if(document.querySelector('time.lt')&&!sessionStorage.getItem('zp-tz-reload')){sessionStorage.setItem('zp-tz-reload','1');location.reload();}
+    }else{sessionStorage.removeItem('zp-tz-reload');}
+  }catch(e){}
   // keep csrf header available for fetch posts
   window.ZP_CSRF=csrf;
 })();
