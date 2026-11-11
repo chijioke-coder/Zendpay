@@ -631,6 +631,31 @@ def api_lookup():
     return jsonify(found=True, name=full_name(r).upper(), currency=r["currency"])
 
 
+@app.route("/api/bank-lookup")
+@login_required
+def api_bank_lookup():
+    """Name enquiry for owner-created bank accounts. Without `bank`: which banks have this account number.
+    With `bank`: that account's details (so the sender can confirm who they are paying before the PIN)."""
+    key = f"banklook:{g.user['id']}"
+    if throttled(key, 40, 60):
+        return jsonify(error="Too many lookups. Wait a minute and try again."), 429
+    hit(key)
+    acct = re.sub(r"\D", "", request.args.get("acct", ""))
+    if not 6 <= len(acct) <= 20:
+        return jsonify(banks=[])
+    base = ("FROM bank_accounts a JOIN banks b ON lower(b.name)=lower(a.bank_name) "
+            "WHERE a.active=1 AND b.active=1 AND a.account_number=?")
+    bank = request.args.get("bank", "").strip()
+    if bank:
+        r = get_db().execute("SELECT a.* " + base + " AND lower(a.bank_name)=lower(?)", (acct, bank)).fetchone()
+        if not r:
+            return jsonify(found=False)
+        return jsonify(found=True, bank=r["bank_name"], name=r["account_name"].upper(), number=r["account_number"],
+                       currency=r["currency"])
+    rows = get_db().execute("SELECT a.bank_name " + base + " ORDER BY a.bank_name", (acct,)).fetchall()
+    return jsonify(banks=[r["bank_name"] for r in rows])
+
+
 @app.route("/api/quote")
 @login_required
 def api_quote():
