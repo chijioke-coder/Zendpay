@@ -112,3 +112,5 @@ button.picker{cursor:pointer}button.picker span{display:block;min-height:24px}
 .bank-chip{border:1px solid var(--line);background:var(--input);color:var(--text);font:inherit;font-weight:600;padding:10px 14px;border-radius:12px;cursor:pointer}
 .bank-chip.on{border-color:var(--primary);background:var(--primary-soft);color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
 .bank-detail{border-color:var(--primary);background:var(--primary-soft)}.bank-detail .row{border-color:rgba(127,127,127,.2)}
+
+.sheet-title{margin:0;padding:18px 20px 10px;font-size:17px}.field.picker:disabled{opacity:.55;cursor:not-allowed}.field.picker .ph{color:var(--muted)}
