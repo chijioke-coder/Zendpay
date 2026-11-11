@@ -3,7 +3,7 @@
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 a{color:var(--primary);text-decoration:none}h1{font-size:28px;margin:.2em 0}h2{margin:0}h3{margin:0 0 8px;font-size:16px}
-.simbar{background:var(--primary);color:#fff;text-align:center;font-size:12px;padding:5px 8px;letter-spacing:.3px}
+
 .muted{color:var(--muted)}.small{font-size:13px}.center{text-align:center}.sub{color:var(--muted);margin:0 0 18px}.grow{flex:1}.pad{padding:18px 0}
 .topbar{display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--card);border-bottom:1px solid var(--line)}
 .logo{display:flex;align-items:center;gap:8px;font-size:20px}.logo b{letter-spacing:.3px;color:var(--primary)}
