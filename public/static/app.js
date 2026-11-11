@@ -35,6 +35,36 @@
         look.hidden=false;if(j.found){to=j.currency;look.className='lookup';look.textContent='✓ '+j.name+' ('+j.currency+')';doQuote()}
         else{look.className='lookup bad';look.textContent='Account not found on Zendpay'}})});
   }
+  // PIN bottom sheet: opens when Send is tapped, submits the form once 4 digits are entered
+  var send=document.getElementById('sendBtn'),sheet=document.getElementById('pinSheet');
+  if(send&&sheet&&form){
+    var pinVal=document.getElementById('pinValue'),dots=sheet.querySelectorAll('#pinDots i'),
+        perr=document.getElementById('pinErr'),sum=document.getElementById('pinSummary'),pin='',busy=false;
+    function paint(){dots.forEach(function(d,i){d.classList.toggle('on',i<pin.length)})}
+    function openPin(){
+      if(!form.checkValidity()){form.reportValidity();return}
+      var a=document.getElementById('amt'),q=document.getElementById('quote'),who=document.getElementById('lookup');
+      sum.textContent=(who&&!who.hidden&&who.textContent.indexOf('✓')===0?who.textContent.replace('✓ ','')+' · ':'')+
+        (a&&a.value?'Amount '+a.value:'')+(q&&!q.hidden?' · '+q.textContent.split(' · ')[0]:'');
+      pin='';busy=false;perr.hidden=true;paint();sheet.hidden=false;document.body.style.overflow='hidden';
+    }
+    function closePin(){sheet.hidden=true;document.body.style.overflow='';pin='';paint()}
+    function press(k){
+      if(busy)return;
+      if(k==='del')pin=pin.slice(0,-1);
+      else if(/^\d$/.test(k)&&pin.length<4)pin+=k;
+      paint();
+      if(pin.length===4){busy=true;pinVal.value=pin;setTimeout(function(){form.submit()},120)}
+    }
+    send.addEventListener('click',openPin);
+    sheet.addEventListener('click',function(e){
+      if(e.target.closest('[data-pin-close]')){closePin();return}
+      var b=e.target.closest('[data-k]');if(b)press(b.dataset.k)});
+    document.addEventListener('keydown',function(e){
+      if(sheet.hidden)return;
+      if(e.key==='Escape')closePin();else if(e.key==='Backspace')press('del');else if(/^\d$/.test(e.key))press(e.key)});
+    form.addEventListener('submit',function(e){if(!/^\d{4}$/.test(pinVal.value)){e.preventDefault();openPin()}});
+  }
   // time zone: show times where the person is accessing from. Tell the server via a cookie.
   try{
     var tz=Intl.DateTimeFormat().resolvedOptions().timeZone,used=document.body.dataset.tz||'';
