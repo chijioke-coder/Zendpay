@@ -4,8 +4,8 @@
 <form method="post" class="card stack" id="tfForm" data-kind="bank">
   <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
   <label class="field"><small>ACCOUNT NUMBER</small><input name="account" id="bacct" inputmode="numeric" maxlength="20" placeholder="Enter the recipient's account number" autocomplete="off" required></label>
+  <button type="button" class="field picker" id="bankField" disabled><small>BANK NAME</small><span id="bankLabel" class="ph">Enter the account number first</span></button>
   <div class="lookup bad" id="bankMsg" hidden></div>
-  <div id="bankPick" hidden><p class="muted small pick-h">Choose the bank</p><div class="bank-chips" id="bankList"></div></div>
   <input type="hidden" name="bank" id="bankValue">
   <div class="card slim bank-detail" id="bankDetail" hidden>
     <div class="row"><span class="muted">Account name</span><b id="bdName"></b></div>
@@ -17,8 +17,12 @@
   <div class="quote" id="quote" hidden></div>
   <label class="field"><small>NOTE (OPTIONAL)</small><input name="note" maxlength="80"></label>
   <input type="hidden" name="pin" id="pinValue">
-  <p class="muted small">Fee: {{ '%.1f'|format(fee['pct']*100) }}% (min ${{ '%.2f'|format(fee['min_usd']) }}, max ${{ '%.0f'|format(fee['max_usd']) }} equivalent). supported.</p>
+  <p class="muted small">Fee: {{ '%.1f'|format(fee['pct']*100) }}% (min ${{ '%.2f'|format(fee['min_usd']) }}, max ${{ '%.0f'|format(fee['max_usd']) }} equivalent).</p>
   <button class="btn primary" id="sendBtn" type="button" {{ 'disabled' if g.user['status']!='active' }}>Send</button>
 </form>
+<div class="sheet" id="bankSheet" hidden role="dialog" aria-modal="true" aria-label="Select bank">
+  <div class="sheet-bg" data-bank-close></div>
+  <div class="sheet-body"><h3 class="sheet-title">Select bank</h3><ul id="bankList"></ul></div>
+</div>
 {% include "_pin_sheet.html" %}
 {% endblock %}
