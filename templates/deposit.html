@@ -2,7 +2,7 @@
 {% block header %}{% set back=url_for('home') %}{% set title='Add Money' %}{% include "_back.html" %}{% endblock %}
 {% block content %}
 <div class="card">
-  <p class="muted">Request funds  <b>{{ g.user['currency'] }}</b>. Your Deposit Request is Processed and You make Deposits</p>
+  <p class="muted">Request funds in  <b>{{ g.user['currency'] }}</b>. Your Deposit Request is Processed and You make Deposits</p>
   <p class="muted small">Funds come from: <b>{{ full_name(owner) }}</b> · Acct {{ owner['account_number'] }}</p>
   <form method="post" class="stack">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
