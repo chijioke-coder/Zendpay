@@ -1,4 +1,4 @@
-"""Static reference data for Zendpay (simulation only)."""
+
 
 # code: (name, symbol, units per 1 USD -- fixed simulation rates)
 CURRENCIES = {
