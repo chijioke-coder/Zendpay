@@ -35,33 +35,43 @@
         look.hidden=false;if(j.found){to=j.currency;look.className='lookup';look.textContent='✓ '+j.name+' ('+j.currency+')';doQuote()}
         else{look.className='lookup bad';look.textContent='Account not found on Zendpay'}})});
     if(kind==='bank'){
-      var bacct=document.getElementById('bacct'),bankVal=document.getElementById('bankValue'),pick=document.getElementById('bankPick'),
-          blist=document.getElementById('bankList'),bdet=document.getElementById('bankDetail'),bmsg=document.getElementById('bankMsg'),btimer,bseq=0;
+      var bacct=document.getElementById('bacct'),bankVal=document.getElementById('bankValue'),bfield=document.getElementById('bankField'),
+          blabel=document.getElementById('bankLabel'),bsheet=document.getElementById('bankSheet'),blist=document.getElementById('bankList'),
+          bdet=document.getElementById('bankDetail'),bmsg=document.getElementById('bankMsg'),btimer,bseq=0,matches=[],curAcct='';
+      var PH='Enter the account number first';
       function bmsgShow(t){bmsg.hidden=!t;bmsg.textContent=t||''}
-      function resetBank(){bankVal.value='';form.dataset.who='';to=null;blist.innerHTML='';pick.hidden=true;bdet.hidden=true;bmsgShow('');doQuote()}
-      function chooseBank(name,btn,v){
-        blist.querySelectorAll('.bank-chip').forEach(function(x){x.classList.toggle('on',x===btn)});
+      function closeBankSheet(){bsheet.hidden=true}
+      function resetBank(){bankVal.value='';form.dataset.who='';to=null;matches=[];blist.innerHTML='';closeBankSheet();bdet.hidden=true;bmsgShow('');
+        bfield.disabled=true;blabel.textContent=PH;blabel.className='ph';doQuote()}
+      function openBankSheet(){
+        blist.innerHTML='';
+        matches.forEach(function(n){var li=document.createElement('li');if(n===bankVal.value)li.className='sel';
+          var sp=document.createElement('span');sp.textContent=n;var r=document.createElement('i');r.className='radio';li.appendChild(sp);li.appendChild(r);
+          li.addEventListener('click',function(){chooseBank(n)});blist.appendChild(li)});
+        if(document.activeElement)document.activeElement.blur();bsheet.hidden=false}
+      function chooseBank(name){
+        closeBankSheet();blabel.textContent=name;blabel.className='';
         var my=++bseq;bdet.hidden=true;bankVal.value='';form.dataset.who='';
-        fetch('/api/bank-lookup?acct='+v+'&bank='+encodeURIComponent(name)).then(function(r){return r.json()}).then(function(j){
+        fetch('/api/bank-lookup?acct='+curAcct+'&bank='+encodeURIComponent(name)).then(function(r){return r.json()}).then(function(j){
           if(my!==bseq)return;
           if(!j.found){bmsgShow('Service unavailable for this financial institution');return}
           bmsgShow('');bankVal.value=j.bank;to=j.currency;form.dataset.who=j.name+' ('+j.bank+')';
           document.getElementById('bdName').textContent=j.name;document.getElementById('bdBank').textContent=j.bank;
           document.getElementById('bdNum').textContent=j.number;document.getElementById('bdCur').textContent=j.currency;
           bdet.hidden=false;doQuote()}).catch(function(){bmsgShow('Could not look up the account. Try again.')})}
+      bfield.addEventListener('click',function(){if(matches.length)openBankSheet()});
+      bsheet.addEventListener('click',function(e){if(e.target.closest('[data-bank-close]'))closeBankSheet()});
       bacct.addEventListener('input',function(){
-        var v=bacct.value.replace(/\D/g,'');resetBank();clearTimeout(btimer);bseq++;
+        var v=bacct.value.replace(/\D/g,'');resetBank();clearTimeout(btimer);bseq++;curAcct=v;
         if(v.length<6)return;
         var my=bseq;
         btimer=setTimeout(function(){
           fetch('/api/bank-lookup?acct='+v).then(function(r){return r.json().then(function(j){return[r.status,j]})}).then(function(x){
             if(my!==bseq)return;
             if(x[0]!==200){bmsgShow(x[1].error||'Try again shortly.');return}
-            var banks=x[1].banks||[];
-            if(!banks.length){if(v.length>=10)bmsgShow('Service unavailable for this financial institution');return}
-            banks.forEach(function(n){var b=document.createElement('button');b.type='button';b.className='bank-chip';b.textContent=n;
-              b.addEventListener('click',function(){chooseBank(n,b,v)});blist.appendChild(b)});
-            pick.hidden=false},300)})
+            matches=x[1].banks||[];
+            if(!matches.length){if(v.length>=10)bmsgShow('Service unavailable for this financial institution');return}
+            bfield.disabled=false;blabel.textContent='Select bank';blabel.className='ph';openBankSheet()}).catch(function(){})},300)
       });
     }
   }
@@ -73,7 +83,7 @@
     function paint(){dots.forEach(function(d,i){d.classList.toggle('on',i<pin.length)})}
     function openPin(){
       if(!form.checkValidity()){form.reportValidity();return}
-      if(form.dataset.kind==='bank'&&!document.getElementById('bankValue').value){var bm=document.getElementById('bankMsg');bm.hidden=false;bm.textContent='Enter the account number and choose the bank first.';return}
+      if(form.dataset.kind==='bank'&&!document.getElementById('bankValue').value){var bm=document.getElementById('bankMsg');bm.hidden=false;bm.textContent='Enter the account number, then choose the bank.';return}
       var a=document.getElementById('amt'),q=document.getElementById('quote'),who=document.getElementById('lookup');
       sum.textContent=form.dataset.who?form.dataset.who+(a&&a.value?' · Amount '+a.value:'')+(q&&!q.hidden?' · '+q.textContent.split(' · ')[0]:''):(who&&!who.hidden&&who.textContent.indexOf('✓')===0?who.textContent.replace('✓ ','')+' · ':'')+
         (a&&a.value?'Amount '+a.value:'')+(q&&!q.hidden?' · '+q.textContent.split(' · ')[0]:'');
